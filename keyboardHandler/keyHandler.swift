@@ -1,8 +1,9 @@
 import Cocoa
 
 var enabled: Bool = true
-//follow value orders!! the order in the all = [#1, #2, #3 ...]
+//when comparing collections follow value orders!! OK = [#1, #3, #7] / not OK = [#4, #2, #6]
 let all : Array<CGEventFlags> = [.maskAlphaShift, .maskShift, .maskControl, .maskAlternate, .maskCommand, .maskHelp, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
+let allWithoutCapsLock : Array<CGEventFlags> = [.maskShift, .maskControl, .maskAlternate, .maskCommand, .maskHelp, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
 
 class KeyHandler: NSView {
     func initializeEventTap() {
@@ -15,7 +16,7 @@ class KeyHandler: NSView {
                 (_, type, event, _) -> Unmanaged<CGEvent>? in event
                 if enabled {
                     var eventFlagsAsCollection : Array<CGEventFlags> = []
-                    for flag in all {
+                    for flag in allWithoutCapsLock { //use allWithoutCapsLock to make the program caps lock agnostic
                         if event.flags.contains(flag) {
                             eventFlagsAsCollection.append(flag)
                         }
@@ -40,7 +41,6 @@ class KeyHandler: NSView {
                             return nil
                         }
                     } else if type == .keyDown {
-                        
                         //ctrl + c/v/x a/s/z/f
                         if [Keycode.c, Keycode.v, Keycode.x, Keycode.a, Keycode.s, Keycode.z, Keycode.f].contains(key16)
                             && eventFlagsAsCollection == [.maskControl, .maskNonCoalesced] {
@@ -68,21 +68,25 @@ class KeyHandler: NSView {
                             event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.z as NSNumber).int64Value)
                         }
                         
+                        //TODOs interact more inteligently with Finder process, rather than resending key combinations
                         if NSWorkspace.shared.frontmostApplication?.localizedName == "Finder" {
                             //navigate back in Finder
-                            if key16 == Keycode.delete && eventFlagsAsCollection == [.maskNonCoalesced] {
+                            if false // !!!!! CONFLICTS ON FILE RENAME
+                                && key16 == Keycode.delete && eventFlagsAsCollection == [.maskNonCoalesced] {
                                 FakeKey.sendOne(Keycode.upArrow, [.maskCommand, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced])
                                 return nil
                             }
                             
                             //delete file or folder in Finder
-                            if key16 == Keycode.forwardDelete && eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced] {
+                            if false // !!!!! CONFLICTS ON FILE RENAME
+                                && key16 == Keycode.forwardDelete && eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced] {
                                 FakeKey.sendOne(Keycode.delete, [.maskCommand, .maskNonCoalesced])
                                 return nil
                             }
                             
                             //open folder in Finder with Enter
-                            if key16 == Keycode.returnKey && eventFlagsAsCollection == [.maskNonCoalesced] {
+                            if false // !!!!! CONFLICTS ON FILE RENAME
+                                && key16 == Keycode.returnKey && eventFlagsAsCollection == [.maskNonCoalesced] {
                                 FakeKey.sendOne(Keycode.o, [.maskCommand, .maskNonCoalesced])
                                 return nil
                             }
@@ -95,6 +99,12 @@ class KeyHandler: NSView {
                             
                             return Unmanaged.passRetained(event)
                         }
+                        
+                        
+                        /*           The code is below Finder, because is text processing related,          //
+                        //      so if we are in Finder there is no need for the instructions to get here    //
+                        //                                                                                  //
+                        //                                                                                  */
                         
                         //ctrl + arrow
                         if [Keycode.leftArrow, Keycode.rightArrow].contains(key16)

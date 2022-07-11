@@ -51,6 +51,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
     }
     
+    // Assuming we have a set of images with names: statusAnimatedIcon0, ..., statusAnimatedIcon6
+    //private let iconAnimation = StatusBarIconAnimationUtils()
+
     private var keyHandler = KeyHandler()
     private var statusItem: NSStatusItem!
     private var keyboardControl = NSMenuItem(title: "Disable keyboard support", action: #selector(switchKeyboardControl) , keyEquivalent: "")
