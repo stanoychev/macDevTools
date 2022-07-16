@@ -4,6 +4,7 @@ var enabled: Bool = true
 //when comparing collections follow value orders!! OK = [#1, #3, #7] / not OK = [#4, #2, #6]
 let all : Array<CGEventFlags> = [.maskAlphaShift, .maskShift, .maskControl, .maskAlternate, .maskCommand, .maskHelp, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
 let allWithoutCapsLock : Array<CGEventFlags> = [.maskShift, .maskControl, .maskAlternate, .maskCommand, .maskHelp, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
+let commonKeys = [Keycode.c, Keycode.v, Keycode.x, Keycode.a, Keycode.s, Keycode.z, Keycode.f]
 
 class KeyHandler: NSView {
     func initializeEventTap() {
@@ -23,26 +24,35 @@ class KeyHandler: NSView {
                     }
                     
                     let key16 :UInt16 = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+                    let processName = NSWorkspace.shared.frontmostApplication?.localizedName
                     
                     if type == .otherMouseDown {
                         let click16 = UInt16(event.getIntegerValueField(.mouseEventButtonNumber))
                         
                         //navigate back in Finder
                         if click16 == MouseButton.back
-                            && NSWorkspace.shared.frontmostApplication?.localizedName == "Finder" {
+                            && processName == "Finder" {
                             FakeKey.sendOne(Keycode.upArrow, [.maskCommand, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced])
                             return nil
                         }
                         
                         //navigate forward in Finder
                         if click16 == MouseButton.next
-                            && NSWorkspace.shared.frontmostApplication?.localizedName == "Finder" {
+                            && processName == "Finder" {
                             FakeKey.sendOne(Keycode.downArrow, [.maskCommand, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced])
                             return nil
                         }
                     } else if type == .keyDown {
+                        if key16 == Keycode.w
+                            && processName == "Firefox"
+                            && eventFlagsAsCollection == [.maskControl, .maskNonCoalesced] {
+                                event.flags.remove(.maskControl)
+                                event.flags.insert(.maskCommand)
+                                return Unmanaged.passRetained(event)
+                        }
+                        
                         //ctrl + c/v/x a/s/z/f
-                        if [Keycode.c, Keycode.v, Keycode.x, Keycode.a, Keycode.s, Keycode.z, Keycode.f].contains(key16)
+                        if commonKeys.contains(key16)
                             && eventFlagsAsCollection == [.maskControl, .maskNonCoalesced] {
                             event.flags.remove(.maskControl)
                             event.flags.insert(.maskCommand)
@@ -69,7 +79,7 @@ class KeyHandler: NSView {
                         }
                         
                         //TODOs interact more inteligently with Finder process, rather than resending key combinations
-                        if NSWorkspace.shared.frontmostApplication?.localizedName == "Finder" {
+                        if processName == "Finder" {
                             //navigate back in Finder
                             if false // !!!!! CONFLICTS ON FILE RENAME
                                 && key16 == Keycode.delete && eventFlagsAsCollection == [.maskNonCoalesced] {
@@ -118,11 +128,9 @@ class KeyHandler: NSView {
                         //home
                         if key16 == Keycode.home {
                             //home to go to most left on the row
-                            if eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced] {
-                                event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.leftArrow as NSNumber).int64Value)
-                                event.flags.insert(.maskCommand)
-                            //home + shift for text selection
-                            } else if eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced] {
+                            if eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced]
+                                //home + shift for text selection
+                                || eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced] {
                                 event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.leftArrow as NSNumber).int64Value)
                                 event.flags.insert(.maskCommand)
                             }
@@ -131,11 +139,9 @@ class KeyHandler: NSView {
                         //end
                         if key16 == Keycode.end {
                             //end to go to most right on the row
-                            if eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced] {
-                                event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.rightArrow as NSNumber).int64Value)
-                                event.flags.insert(.maskCommand)
-                            //end + shift for text selection
-                            } else if eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced] {
+                            if eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced]
+                                //end + shift for text selection
+                                || eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced] {
                                 event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.rightArrow as NSNumber).int64Value)
                                 event.flags.insert(.maskCommand)
                             }
