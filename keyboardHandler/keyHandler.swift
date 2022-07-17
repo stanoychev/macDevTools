@@ -56,6 +56,7 @@ class KeyHandler: NSView {
                             && eventFlagsAsCollection == [.maskControl, .maskNonCoalesced] {
                             event.flags.remove(.maskControl)
                             event.flags.insert(.maskCommand)
+                            return Unmanaged.passRetained(event)
                         }
                         
                         //win + D = show desktop
@@ -76,6 +77,7 @@ class KeyHandler: NSView {
                             event.flags.insert(.maskCommand)
                             event.flags.insert(.maskShift)
                             event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.z as NSNumber).int64Value)
+                            return Unmanaged.passRetained(event)
                         }
                         
                         //TODOs interact more inteligently with Finder process, rather than resending key combinations
@@ -121,30 +123,31 @@ class KeyHandler: NSView {
                             && (eventFlagsAsCollection == [.maskControl, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
                                 //ctrl + shift + arrow (for text selection)
                                 || eventFlagsAsCollection == [.maskShift, .maskControl, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]) {
-                                event.flags.remove(.maskControl)
-                                event.flags.insert(.maskAlternate)
+                            event.flags.remove(.maskControl)
+                            event.flags.insert(.maskAlternate)
+                            return Unmanaged.passRetained(event)
                         }
                         
                         //home
-                        if key16 == Keycode.home {
+                        if key16 == Keycode.home
                             //home to go to most left on the row
-                            if eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced]
+                            && (eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced]
                                 //home + shift for text selection
-                                || eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced] {
-                                event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.leftArrow as NSNumber).int64Value)
-                                event.flags.insert(.maskCommand)
-                            }
+                                || eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced]) {
+                            event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.leftArrow as NSNumber).int64Value)
+                            event.flags.insert(.maskCommand)
+                            return Unmanaged.passRetained(event)
                         }
                         
                         //end
-                        if key16 == Keycode.end {
+                        if key16 == Keycode.end
                             //end to go to most right on the row
-                            if eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced]
+                            && (eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced]
                                 //end + shift for text selection
-                                || eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced] {
-                                event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.rightArrow as NSNumber).int64Value)
-                                event.flags.insert(.maskCommand)
-                            }
+                                || eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced]) {
+                            event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.rightArrow as NSNumber).int64Value)
+                            event.flags.insert(.maskCommand)
+                            return Unmanaged.passRetained(event)
                         }
                         
                     } else if type == .flagsChanged {
