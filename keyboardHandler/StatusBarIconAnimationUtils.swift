@@ -22,7 +22,8 @@ class StatusBarIconAnimationUtils: NSObject {
     }
 
     private func tickHandler(_ frameCount: Int) {
-        let imagePath = "/Users/nikolastanoychev/Github/macDevTools/icon/statusAnimatedIcon/\(frameCount)"
+        //TODO
+        let imagePath = "PATH TO IMAGE/\(frameCount)"
         print("Switching image to: \(imagePath)")
         print("Exists: \(FileManager.default.fileExists(atPath: imagePath))")
         
