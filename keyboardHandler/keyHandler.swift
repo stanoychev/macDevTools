@@ -1,10 +1,21 @@
 import Cocoa
+import SystemConfiguration
 
 var enabled: Bool = true
-//when comparing collections follow value orders!! OK = [#1, #3, #7] / not OK = [#4, #2, #6]
-let all : Array<CGEventFlags> = [.maskAlphaShift, .maskShift, .maskControl, .maskAlternate, .maskCommand, .maskHelp, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
+
 let allWithoutCapsLock : Array<CGEventFlags> = [.maskShift, .maskControl, .maskAlternate, .maskCommand, .maskHelp, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
+
 let commonKeys = [Keycode.c, Keycode.v, Keycode.x, Keycode.a, Keycode.s, Keycode.z, Keycode.f]
+let leftRight = [Keycode.leftArrow, Keycode.rightArrow]
+
+let control : Array<CGEventFlags> = [.maskControl, .maskNonCoalesced]
+let alternate : Array<CGEventFlags> = [.maskAlternate, .maskNonCoalesced]
+let noFlags : Array<CGEventFlags> = [.maskNonCoalesced]
+let secondaryFn : Array<CGEventFlags> = [.maskSecondaryFn, .maskNonCoalesced]
+let shiftSecondaryFn : Array<CGEventFlags> = [.maskShift, .maskSecondaryFn, .maskNonCoalesced]
+let shiftCommand : Array<CGEventFlags> = [.maskShift, .maskCommand, .maskNonCoalesced]
+let controlSecondaryFnNumericPad : Array<CGEventFlags> = [.maskControl, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
+let shiftControlSecondaryFnNumericPad : Array<CGEventFlags> = [.maskShift, .maskControl, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
 
 class KeyHandler: NSView {
     func initializeEventTap() {
@@ -43,9 +54,11 @@ class KeyHandler: NSView {
                             return nil
                         }
                     } else if type == .keyDown {
+                        let hasControlFlag = areSame(eventFlagsAsCollection, control)
+                        
                         if key16 == Keycode.w
                             && processName == "Firefox"
-                            && eventFlagsAsCollection == [.maskControl, .maskNonCoalesced] {
+                            && hasControlFlag {
                                 event.flags.remove(.maskControl)
                                 event.flags.insert(.maskCommand)
                                 return Unmanaged.passRetained(event)
@@ -53,26 +66,36 @@ class KeyHandler: NSView {
                         
                         //ctrl + c/v/x a/s/z/f
                         if commonKeys.contains(key16)
-                            && eventFlagsAsCollection == [.maskControl, .maskNonCoalesced] {
+                            && hasControlFlag {
                             event.flags.remove(.maskControl)
                             event.flags.insert(.maskCommand)
                             return Unmanaged.passRetained(event)
                         }
                         
+                        let hasAlternateFlag = areSame(eventFlagsAsCollection, alternate)
+                        
                         //win + D = show desktop
-                        if key16 == Keycode.d && eventFlagsAsCollection == [.maskAlternate, .maskNonCoalesced] {
+                        if key16 == Keycode.d
+                            && hasAlternateFlag {
                             FakeKey.sendOne(103, [.maskSecondaryFn, .maskNonCoalesced])
                             return nil
                         }
                         
                         //win + E = open finder
-                        if key16 == Keycode.e && eventFlagsAsCollection == [.maskAlternate, .maskNonCoalesced] {
-                            NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: "/Users/nikolastanoychev")
+                        if key16 == Keycode.e
+                            && hasAlternateFlag {
+                            do {
+                                let cfUser : CFString? = [SCDynamicStoreCopyConsoleUser(nil,nil,nil)][0]
+                                let strUser = cfUser as String?
+                                NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: "/Users/\(strUser ?? "")")
+                            }
+
                             return nil
                         }
                         
                         //ctrl + y (redo)
-                        if Keycode.y == key16 && eventFlagsAsCollection == [.maskControl, .maskNonCoalesced] {
+                        if Keycode.y == key16
+                            && hasControlFlag {
                             event.flags.remove(.maskControl)
                             event.flags.insert(.maskCommand)
                             event.flags.insert(.maskShift)
@@ -80,31 +103,38 @@ class KeyHandler: NSView {
                             return Unmanaged.passRetained(event)
                         }
                         
+                        let hasNoFlags = areSame(eventFlagsAsCollection, noFlags)
+                        let hasSecondaryFnFlag = areSame(eventFlagsAsCollection, secondaryFn)
+                        
                         //TODOs interact more inteligently with Finder process, rather than resending key combinations
                         if processName == "Finder" {
                             //navigate back in Finder
                             if false // !!!!! CONFLICTS ON FILE RENAME
-                                && key16 == Keycode.delete && eventFlagsAsCollection == [.maskNonCoalesced] {
+                                && key16 == Keycode.delete
+                                && hasNoFlags {
                                 FakeKey.sendOne(Keycode.upArrow, [.maskCommand, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced])
                                 return nil
                             }
                             
                             //delete file or folder in Finder
                             if false // !!!!! CONFLICTS ON FILE RENAME
-                                && key16 == Keycode.forwardDelete && eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced] {
+                                && key16 == Keycode.forwardDelete
+                                && hasSecondaryFnFlag {
                                 FakeKey.sendOne(Keycode.delete, [.maskCommand, .maskNonCoalesced])
                                 return nil
                             }
                             
                             //open folder in Finder with Enter
                             if false // !!!!! CONFLICTS ON FILE RENAME
-                                && key16 == Keycode.returnKey && eventFlagsAsCollection == [.maskNonCoalesced] {
+                                && key16 == Keycode.returnKey
+                                && hasNoFlags {
                                 FakeKey.sendOne(Keycode.o, [.maskCommand, .maskNonCoalesced])
                                 return nil
                             }
                             
                             //rename file or folder with F2
-                            if key16 == Keycode.f2 && eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced] {
+                            if key16 == Keycode.f2
+                                && hasSecondaryFnFlag {
                                 event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.returnKey as NSNumber).int64Value)
                                 event.flags.remove(.maskSecondaryFn)
                             }
@@ -118,22 +148,27 @@ class KeyHandler: NSView {
                         //                                                                                  //
                         //                                                                                  */
                         
+                        let hasControlSecondaryNumeric = areSame(eventFlagsAsCollection, controlSecondaryFnNumericPad)
+                        let hasShiftControlSecondaryNumeric = areSame(eventFlagsAsCollection, shiftControlSecondaryFnNumericPad)
+                        
                         //ctrl + arrow
-                        if [Keycode.leftArrow, Keycode.rightArrow].contains(key16)
-                            && (eventFlagsAsCollection == [.maskControl, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
+                        if leftRight.contains(key16)
+                            && (hasControlSecondaryNumeric
                                 //ctrl + shift + arrow (for text selection)
-                                || eventFlagsAsCollection == [.maskShift, .maskControl, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]) {
+                                || hasShiftControlSecondaryNumeric) {
                             event.flags.remove(.maskControl)
                             event.flags.insert(.maskAlternate)
                             return Unmanaged.passRetained(event)
                         }
                         
+                        let hasShiftSecondary = areSame(eventFlagsAsCollection, shiftSecondaryFn)
+                        
                         //home
                         if key16 == Keycode.home
                             //home to go to most left on the row
-                            && (eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced]
+                            && (hasSecondaryFnFlag
                                 //home + shift for text selection
-                                || eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced]) {
+                                || hasShiftSecondary) {
                             event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.leftArrow as NSNumber).int64Value)
                             event.flags.insert(.maskCommand)
                             return Unmanaged.passRetained(event)
@@ -142,9 +177,9 @@ class KeyHandler: NSView {
                         //end
                         if key16 == Keycode.end
                             //end to go to most right on the row
-                            && (eventFlagsAsCollection == [.maskSecondaryFn, .maskNonCoalesced]
+                            && (hasSecondaryFnFlag
                                 //end + shift for text selection
-                                || eventFlagsAsCollection == [.maskShift, .maskSecondaryFn, .maskNonCoalesced]) {
+                                || hasShiftSecondary) {
                             event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.rightArrow as NSNumber).int64Value)
                             event.flags.insert(.maskCommand)
                             return Unmanaged.passRetained(event)
@@ -152,7 +187,7 @@ class KeyHandler: NSView {
                         
                     } else if type == .flagsChanged {
                         //switch keyboard language
-                        if eventFlagsAsCollection == [.maskShift, .maskCommand, .maskNonCoalesced] {
+                        if areSame(eventFlagsAsCollection, shiftCommand) {
                             FakeKey.sendOne(Keycode.space, [.maskControl, .maskNonCoalesced])
                             return nil
                         }
@@ -168,6 +203,20 @@ class KeyHandler: NSView {
             CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap!, 0),
             CFRunLoopMode.defaultMode)
     }
+}
+
+func areSame(_ c1: Array<CGEventFlags>, _ c2: Array<CGEventFlags>) -> Bool {
+    if c1.count != c2.count {
+        return false
+    }
+    
+    for i in 0...(c1.count - 1) {
+        if c1[i] != c2[i] {
+            return false
+        }
+    }
+    
+    return true
 }
 
 class FakeKey {
