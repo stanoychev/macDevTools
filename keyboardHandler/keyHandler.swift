@@ -37,17 +37,16 @@ class KeyHandler: NSView {
                     let key16 :UInt16 = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
                     let processName = NSWorkspace.shared.frontmostApplication?.localizedName
                     
+                    //navigate Back and Next in Finder with Logitec MX mouse
                     if type == .otherMouseDown {
                         let click16 = UInt16(event.getIntegerValueField(.mouseEventButtonNumber))
                         
-                        //navigate back in Finder
                         if click16 == MouseButton.back
                             && processName == "Finder" {
                             FakeKey.sendOne(Keycode.upArrow, [.maskCommand, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced])
                             return nil
                         }
                         
-                        //navigate forward in Finder
                         if click16 == MouseButton.next
                             && processName == "Finder" {
                             FakeKey.sendOne(Keycode.downArrow, [.maskCommand, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced])
