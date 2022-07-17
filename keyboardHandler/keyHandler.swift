@@ -6,8 +6,6 @@ let all : Array<CGEventFlags> = [.maskAlphaShift, .maskShift, .maskControl, .mas
 let allWithoutCapsLock : Array<CGEventFlags> = [.maskShift, .maskControl, .maskAlternate, .maskCommand, .maskHelp, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
 let commonKeys = [Keycode.c, Keycode.v, Keycode.x, Keycode.a, Keycode.s, Keycode.z, Keycode.f]
 
-let quickSelector : Dictionary<Args, Int> = [:]
-
 class KeyHandler: NSView {
     func initializeEventTap() {
         let eventTap = CGEvent.tapCreate(
@@ -45,9 +43,6 @@ class KeyHandler: NSView {
                             return nil
                         }
                     } else if type == .keyDown {
-                        
-                        var args = Args(key16, processName ?? "", eventFlagsAsCollection)
-                        
                         if key16 == Keycode.w
                             && processName == "Firefox"
                             && eventFlagsAsCollection == [.maskControl, .maskNonCoalesced] {
@@ -203,28 +198,4 @@ struct MouseButton {
     static let middle   : UInt16 = 0x02
     static let back     : UInt16 = 0x03
     static let next     : UInt16 = 0x04
-}
-
-class Args : Hashable, Equatable {
-    init(_ key: uint16, _ process: String, _ flags: Array<CGEventFlags>) {
-        self.key = key
-        if  processes.contains(process) {
-            self.process = process
-        }
-        self.flags = flags
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
-    }
-    
-    static func == (lhs: Args, rhs: Args) -> Bool {
-        return lhs === rhs
-    }
-    
-    let processes = ["Firefox", "Finder"]
-    
-    var key : uint16
-    var process : String? = ""
-    var flags : Array<CGEventFlags>
 }
