@@ -1,6 +1,5 @@
 struct Keycode {
     static let returnKey                 : UInt16 = 0x24
-    static let enter                     : UInt16 = 0x4C
     static let tab                       : UInt16 = 0x30
     static let space                     : UInt16 = 0x31
     static let delete                    : UInt16 = 0x33

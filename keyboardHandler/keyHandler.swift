@@ -5,7 +5,7 @@ var enabled: Bool = true
 
 let allWithoutCapsLock : Array<CGEventFlags> = [.maskShift, .maskControl, .maskAlternate, .maskCommand, .maskHelp, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
 
-let commonKeys = [Keycode.c, Keycode.v, Keycode.x, Keycode.a, Keycode.s, Keycode.z, Keycode.f]
+let commonKeys = [Keycode.c, Keycode.v, Keycode.x, Keycode.a, Keycode.s, Keycode.z, Keycode.f, Keycode.b, Keycode.i, Keycode.u]
 let leftRight = [Keycode.leftArrow, Keycode.rightArrow]
 
 let control : Array<CGEventFlags> = [.maskControl, .maskNonCoalesced]
@@ -34,7 +34,6 @@ class KeyHandler: NSView {
                         }
                     }
                     
-                    let key16 :UInt16 = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
                     let processName = NSWorkspace.shared.frontmostApplication?.localizedName
                     
                     //navigate Back and Next in Finder with Logitec MX mouse
@@ -53,6 +52,12 @@ class KeyHandler: NSView {
                             return nil
                         }
                     } else if type == .keyDown {
+                        let key16 :UInt16 = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+                        
+                        if shouldReturnEarly[key16] ?? true {
+                            return Unmanaged.passRetained(event)
+                        }
+                        
                         let hasControlFlag = areSame(eventFlagsAsCollection, control)
                         
                         if key16 == Keycode.w

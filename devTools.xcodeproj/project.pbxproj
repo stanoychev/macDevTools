@@ -10,6 +10,7 @@
 		9D2363CA287ABEF500C2867F /* Keycode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2363C9287ABEF500C2867F /* Keycode.swift */; };
 		9D2F86252873E0F300528BB1 /* keyHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2F86242873E0F300528BB1 /* keyHandler.swift */; };
 		9D62979F287B247A00C790D1 /* StatusBarIconAnimationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D62979E287B247A00C790D1 /* StatusBarIconAnimationUtils.swift */; };
+		9D79B1752883F401004EBBA9 /* returnEarlyRegister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D79B1742883F401004EBBA9 /* returnEarlyRegister.swift */; };
 		9DC446C92872AB4800DA77B5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC446C82872AB4800DA77B5 /* AppDelegate.swift */; };
 		9DC446CD2872AB4A00DA77B5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DC446CC2872AB4A00DA77B5 /* Assets.xcassets */; };
 		9DC446DE2872ADFA00DA77B5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9DC446DD2872ADFA00DA77B5 /* Main.storyboard */; };
@@ -20,6 +21,7 @@
 		9D2363C9287ABEF500C2867F /* Keycode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keycode.swift; sourceTree = SOURCE_ROOT; };
 		9D2F86242873E0F300528BB1 /* keyHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = keyHandler.swift; sourceTree = "<group>"; };
 		9D62979E287B247A00C790D1 /* StatusBarIconAnimationUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusBarIconAnimationUtils.swift; sourceTree = "<group>"; };
+		9D79B1742883F401004EBBA9 /* returnEarlyRegister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = returnEarlyRegister.swift; sourceTree = SOURCE_ROOT; };
 		9DC446C52872AB4800DA77B5 /* keyboardHandler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = keyboardHandler.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DC446C82872AB4800DA77B5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9DC446CC2872AB4A00DA77B5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -59,6 +61,7 @@
 		9DC446C72872AB4800DA77B5 /* keyboardHandler */ = {
 			isa = PBXGroup;
 			children = (
+				9D79B1742883F401004EBBA9 /* returnEarlyRegister.swift */,
 				9D62979E287B247A00C790D1 /* StatusBarIconAnimationUtils.swift */,
 				9DC446FE2872B30C00DA77B5 /* Info.plist */,
 				9DC446C82872AB4800DA77B5 /* AppDelegate.swift */,
@@ -141,6 +144,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D79B1752883F401004EBBA9 /* returnEarlyRegister.swift in Sources */,
 				9D2363CA287ABEF500C2867F /* Keycode.swift in Sources */,
 				9DC446C92872AB4800DA77B5 /* AppDelegate.swift in Sources */,
 				9D62979F287B247A00C790D1 /* StatusBarIconAnimationUtils.swift in Sources */,
