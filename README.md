@@ -11,7 +11,7 @@ For example, if you press "Control + C", the event args are modified and it beco
 2. Flexibility: For example, it is made that "Control + W" is intercepted only in Firefox (to close the current tab), thuss not affecting this key combination in other applications.
 
 **Problems it creates:**  
-Of course, the pressed buttons combination can invoke something unexpected.
+In some edge cases, the combination of pressed buttons + modifications may invoke unexpected commands on the focused application.
 
 **Code quality and performance:**  
 This is my "Hello swift and Xcode" application, so I don't know the language tricks and ugly code is present, like the global variables.
@@ -35,3 +35,20 @@ For now this is ment to be build and run locally.
 		To select the application, that Xcode built in the beginning of this step, we navigate almolst only by instinct, not to the git folder of course, rather to */Users/[you]/Library/Developer/Xcode/DerivedData/devTools-[some GUID]/Build/Products/Debug/keyboardHandler.app*  
 		Bare in mind, in future the app name might change, once I understand how to do it without braking the whole project.
 	- Finalliest, build and run the program. Instead with an error, this time you should be ambushed with passowrd/fingerprint request. If everithing is fine on the top bar should appear a circle with "+" in it. On my machine I`ve added the app to start with the OS, it then does not require pass/finger.
+
+**Currently implemented shortcuts**  
+- For Logitec MX mouse the Back/Next side buttons work in Finder as Back and Next
+- **Control +**  
+	 - **X/C/V** = cut/copy/paste
+	 - **B/I** = bolt/italic
+	 - **Z/Y** = undo/redo
+	 - **A/F** = select all/find
+	 - **W** = only in Firefox, to close the current tab
+- **Options + D** = shows desktop
+- **Options + E** = opens Finder
+- **F2** = only in Finder, renames file/folder
+- **Control + left/right** = in text editor moves cursor one word left/right
+- **Shift + Control + left/right** = in text editor marks with cursor one word left/right
+- **Home/End** = in text editor moves cursor to most left/right on the row
+- **Shift + Home/End** = in text editor marks with cursor to most left/right on the row
+- **Command + Shift** = switch keyboard layout
