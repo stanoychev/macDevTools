@@ -2,6 +2,8 @@ import Cocoa
 import SystemConfiguration
 
 var enabled: Bool = true
+var isCutInFinder: Bool = false
+var isCopyInFinder: Bool = false
 
 let allWithoutCapsLock : Array<CGEventFlags> = [.maskShift, .maskControl, .maskAlternate, .maskCommand, .maskHelp, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced]
 
@@ -35,19 +37,20 @@ class KeyHandler: NSView {
                     }
                     
                     let processName = NSWorkspace.shared.frontmostApplication?.localizedName
+                    let isFinder = processName == "Finder"
                     
                     //navigate Back and Next in Finder with Logitec MX mouse
                     if type == .otherMouseDown {
                         let click16 = UInt16(event.getIntegerValueField(.mouseEventButtonNumber))
                         
                         if click16 == MouseButton.back
-                            && processName == "Finder" {
+                            && isFinder {
                             FakeKey.sendOne(Keycode.upArrow, [.maskCommand, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced])
                             return nil
                         }
                         
                         if click16 == MouseButton.next
-                            && processName == "Finder" {
+                            && isFinder {
                             FakeKey.sendOne(Keycode.downArrow, [.maskCommand, .maskSecondaryFn, .maskNumericPad, .maskNonCoalesced])
                             return nil
                         }
@@ -73,6 +76,38 @@ class KeyHandler: NSView {
                         //ctrl + c/v/x a/s/z/f
                         if commonKeys.contains(key16) {
                             if hasControlFlag {
+//                                if key16 == Keycode.x
+//                                    && isFinder {
+//                                    isCutInFinder = true
+//                                    isCopyInFinder = false
+//                                    event.setIntegerValueField(.keyboardEventKeycode, value: (Keycode.c as NSNumber).int64Value)
+//                                }
+//
+//                                if key16 == Keycode.c
+//                                    && isFinder {
+//                                    isCutInFinder = false
+//                                    isCopyInFinder = true
+//                                }
+//
+//                                if key16 == Keycode.v
+//                                    && isFinder {
+//                                    if isCutInFinder {
+//                                        isCutInFinder = false
+//                                        event.flags.insert(.maskAlternate)
+//                                        event.flags.insert(.maskCommand)
+//                                        event.flags.remove(.maskControl)
+//                                        return Unmanaged.passRetained(event)
+//                                    }
+//
+//                                    if isCopyInFinder {
+//                                        event.flags.remove(.maskControl)
+//                                        event.flags.insert(.maskCommand)
+//                                        return Unmanaged.passRetained(event)
+//                                    }
+//
+//                                    return nil
+//                                }
+                                
                                 event.flags.remove(.maskControl)
                                 event.flags.insert(.maskCommand)
                             }
@@ -122,7 +157,7 @@ class KeyHandler: NSView {
                         let hasSecondaryFnFlag = areSame(eventFlagsAsCollection, secondaryFn)
                         
                         //TODOs interact more inteligently with Finder process, rather than resending key combinations
-                        if processName == "Finder" {
+                        if isFinder {
                             //navigate back in Finder
                             if false // !!!!! CONFLICTS ON FILE RENAME
                                 && key16 == Keycode.delete
